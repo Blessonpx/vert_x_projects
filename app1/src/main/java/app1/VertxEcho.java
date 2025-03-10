@@ -1,6 +1,7 @@
 package app1;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetSocket;
 
 public class VertxEcho {
 	/*
@@ -39,10 +40,41 @@ public class VertxEcho {
 		 * */
 		
 		vertx.createHttpServer()
-		.requestHandler(request,request->request().response(end(howMany())))
+		.requestHandler(request->request.response().end(howMany()))
 		.listen(8080);
 		
 	}
 	
+	private static void handleNewClient(NetSocket socket) {
+		noOfConnections++;
+		/*
+		 * The buffer handler is invoked
+		 * every time a buffer is ready for
+		 * consumption. Here we just write
+		 * it back, and we use a convenient
+		 * string conversion helper to look
+		 * for a terminal command.
+		 * */
+		socket.handler(
+				buffer ->{
+					socket.write(buffer);
+					if(buffer.toString().endsWith("/quit\n")) {
+						socket.close();
+						/*
+						 * 
+						 * */
+					}
+				}
+				);
+		socket.closeHandler(v -> noOfConnections--);
+		/*
+		 * Another event is when the connection closes. 
+		 * We decrement a connections counter that was incremented upon connection.
+		 * */
+		
+	}
 	
+	private static String howMany() {
+		return "We now have " + noOfConnections + " connections";
+	}
 }
