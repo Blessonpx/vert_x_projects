@@ -37,5 +37,20 @@ public class HelloVerticle extends AbstractVerticle{
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx(); // We need a global Vert.x instance.
 		vertx.deployVerticle(new HelloVerticle());  // This is the simplest way to deploy a verticle.
+		/*
+		 * 
+		 * POINT to REMEMBER
+		 * event processing happens on a single event-loop thread. Both the periodic 
+		 * tasks and HTTP request processing happen on a thread that appears as vert.x 
+		 * -eventloop-thread-0 in the logs. 
+		 *  
+		 *  
+		 *  In a multithreaded design, updating the counter field would require 
+		 *  either a synchronized block or the use of java.util.concurrent.AtomicLong. There 
+		 *  is no such issue here, so a plain long field can be safely used.
+		 * 
+		 * 
+		 * 
+		 * */
 	}
 }
