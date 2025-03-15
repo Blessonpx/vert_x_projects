@@ -55,22 +55,41 @@ public class HttpServer extends AbstractVerticle{
 			response.write("data:"+ msg.body().encode() + "\n\n");
 		});
 		
-		TimeoutStream ticks = vertx.periodicStream(1000);
+	    // ✅ Use setPeriodic() instead of TimeoutStream
+	    long timerId = vertx.setPeriodic(1000, id -> {
+	        vertx.eventBus().<JsonObject>request("sensor.average", "",
+	            reply -> {
+	                if (reply.succeeded()) {
+	                    response.write("event: average \n");
+	                    response.write("data:" + reply.result().body().encode() + "\n\n");
+	                }
+	            });
+	    });
+
+	    // Proper cleanup when client disconnects
+	    response.endHandler(v -> {
+	        consumer.unregister();
+	        vertx.cancelTimer(timerId); // ✅ Cancel the timer using its ID
+	    });
 		
-		ticks.handler(id->{
-			vertx.eventBus().<JsonObject>request("sensor.average","",
-					reply->{
-						if(reply.succeeded()) {
-							response.write("event: average \n");
-							response.write("data:"+reply.result().body().encode()+ "\n\n");
-						}
-					});
-		});
 		
-		response.endHandler(v->{
-			consumer.unregister();
-			ticks.cancel();
-		});
+		
+//		TimeoutStream ticks = vertx.periodicStream(1000);
+//		
+//		ticks.handler(id->{
+//			vertx.eventBus().<JsonObject>request("sensor.average","",
+//					reply->{
+//						if(reply.succeeded()) {
+//							response.write("event: average \n");
+//							response.write("data:"+reply.result().body().encode()+ "\n\n");
+//						}
+//					});
+//		});
+//		
+//		response.endHandler(v->{
+//			consumer.unregister();
+//			ticks.cancel();
+//		});
 		
 	}
 }
