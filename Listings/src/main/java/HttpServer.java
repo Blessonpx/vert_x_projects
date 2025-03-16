@@ -17,7 +17,7 @@ public class HttpServer extends AbstractVerticle{
 	
 	private void handler(HttpServerRequest request) {
 		if("/".equals(request.path())) {
-			request.response().sendFile("index.html");
+			request.response().sendFile("target/classes/index.html");
 			/*
 			 * The sendFile method allows the content of any local file 
 			 * to be streamed to the client. This closes the connection 
