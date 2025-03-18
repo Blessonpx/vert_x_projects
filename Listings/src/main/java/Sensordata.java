@@ -24,7 +24,9 @@ public class Sensordata extends AbstractVerticle{
 	private void average(Message<JsonObject> message) {
 		double avg=finalValues.values().stream()
 				.collect(Collectors.averagingDouble(Double::doubleValue));
-		JsonObject json=new JsonObject().put("avg",avg);
+		JsonObject json=new JsonObject().put("average",avg);
+		finalValues.put("average",avg);
 		message.reply(json);
 	}
+	
 }

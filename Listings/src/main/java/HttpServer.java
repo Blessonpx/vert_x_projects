@@ -17,6 +17,7 @@ public class HttpServer extends AbstractVerticle{
 	
 	private void handler(HttpServerRequest request) {
 		if("/".equals(request.path())) {
+			System.out.println("Serving index.html file");
 			request.response().sendFile("target/classes/index.html");
 			/*
 			 * The sendFile method allows the content of any local file 
@@ -32,7 +33,7 @@ public class HttpServer extends AbstractVerticle{
 			 * */
 			sse(request);
 		}else{
-			request.response().setStatusCode(401);
+			request.response().setStatusCode(404);
 			/*
 			 * Anything else triggers an HTTP 404 (not found) response.
 			 * 

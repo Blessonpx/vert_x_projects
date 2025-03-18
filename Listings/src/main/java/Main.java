@@ -5,9 +5,9 @@ public class Main {
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
 		vertx.deployVerticle("HeatSensor",new DeploymentOptions().setInstances(4));
-		vertx.deployVerticle("Listner");
-		vertx.deployVerticle("SensorData");
-		vertx.deployVerticle("HttpServer");
+		vertx.deployVerticle(new Listener());
+		vertx.deployVerticle(new Sensordata());
+		vertx.deployVerticle(new HttpServer());
 	}
 
 }

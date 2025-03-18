@@ -2,29 +2,20 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>Title Page Temp Sensor</title>
 </head>
 <body>
-<div id="avg"></div>
-<div id="main"></div>
+<p>Hi </p>
+<div id="messages"></div>
 <script>
-const sse = new EventSource("/sse")
-const main = document.getElementById("main")
-const avg = document.getElementById("avg")
-sse.addEventListener("update", (evt) => {
-const data = JSON.parse(evt.data)
-let div = document.getElementById(data.id);
-if (div === null) {
-	div = document.createElement("div")
-	div.setAttribute("id", data.id)
-	main.appendChild(div)
-}
-div.innerHTML = `<strong>${data.temp.toFixed(2)}</strong>(<em>${data.id}</em>)`
-})
-sse.addEventListener("average", (evt) => {
-const data = JSON.parse(evt.data)
-avg.innerText = `Average = ${data.average.toFixed(2)}`
-})
+const eventSource = new EventSource("http://localhost:8080/sse");
+eventSource.onmessage=function(event){
+	console.log("Message Recieved:",event.data);
+	const msgDiv=document.createElement("div");
+	msgDiv.textContext ="Message"+event.data;
+	document.getEleemntById("messages").appendChild(msgDiv);
+};
 </script>
+
 </body>
 </html>
