@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>localMultiApi</groupId>
+  <artifactId>localMultiApi</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+     <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <vertx.version>4.4.4</vertx.version>  <!-- Use latest version -->
+        <logback.version>1.2.3</logback.version>
+    </properties>
+
+  <dependencies>
+	<dependency>
+		<groupId>io.vertx</groupId>
+		<artifactId>vertx-core</artifactId>
+		<version>4.4.4</version>
+		</dependency>
+		<dependency>
+  <groupId>io.vertx</groupId>
+  <artifactId>vertx-web</artifactId>
+  <version>4.4.4</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.logging.log4j</groupId>
+  <artifactId>log4j-api</artifactId>
+  <version>2.20.0</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.logging.log4j</groupId>
+  <artifactId>log4j-core</artifactId>
+  <version>2.20.0</version>
+</dependency>
+
+<!-- Optional: For SLF4J bridge if you use SLF4J API -->
+<dependency>
+  <groupId>org.apache.logging.log4j</groupId>
+  <artifactId>log4j-slf4j-impl</artifactId>
+  <version>2.20.0</version>
+</dependency>
+
+
+
+</dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiler Plugin for Java 8 Compatibility -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+
+            <!-- Exec Plugin to Run the Vert.x Application -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <mainClass>App.HelloVerticle</mainClass>
+                    <arguments>
+                        <argument>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>
