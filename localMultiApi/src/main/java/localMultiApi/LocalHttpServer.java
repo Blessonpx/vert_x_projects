@@ -6,9 +6,12 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.StaticHandler;
 
 public class LocalHttpServer extends AbstractVerticle{
 	private static final Logger logger = LogManager.getLogger(LocalHttpServer.class);
+	
+	
 	
 	/*
 	 * Http serrver
@@ -18,9 +21,15 @@ public class LocalHttpServer extends AbstractVerticle{
 	public void start() {
 		Router router = Router.router(vertx);
 		
+		router.route("/static/*").handler(StaticHandler.create("webroot"));
+		
 		router.get("/").handler(ctx->{
 			System.out.println("Serving '/' endpoint ");
 			ctx.response().send("Hi");
+		});
+		
+		router.get("/screen_").handler(ctx->{
+			ctx.response().sendFile("webroot/index.html");
 		});
 		
 		router.get("/api1/:param").handler(this::handleApi1);
