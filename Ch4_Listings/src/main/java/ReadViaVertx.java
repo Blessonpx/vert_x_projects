@@ -18,9 +18,10 @@ public class ReadViaVertx {
 						 * We are pushed the contents of the file unlike being pulled in case of ReadFileJDK
 						 * 
 						 * */
-						file.handler(System.out::println)
-							.exceptionHandler(Throwable::printStackTrace)
-							.endHandler(done->{
+						// Callback for new buffer data
+						file.handler(System.out::println)  
+							.exceptionHandler(Throwable::printStackTrace) // callback when exception arises
+							.endHandler(done->{  // callback when the stream ends
 								System.out.println("\n ---------- Done");
 								vertx.close();
 							});
