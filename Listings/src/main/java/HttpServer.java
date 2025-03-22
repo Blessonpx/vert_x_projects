@@ -12,7 +12,7 @@ public class HttpServer extends AbstractVerticle{
 		vertx.createHttpServer()
 		.requestHandler(this::handler)
 		// The HTTP server port is configured with 8080 as the default value.
-		.listen(config().getInteger("port",8080));
+		.listen(config().getInteger("port",8081));
 	}
 	
 	private void handler(HttpServerRequest request) {
