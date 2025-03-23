@@ -10,8 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -128,6 +130,12 @@ public class JukeBox extends AbstractVerticle {
 	private void download(String path ,HttpServerRequest request){
 		String file ="tracks/"+path;
 		// Unless you are on a networked filesystem, the possible blocking time is marginal, so we avoid a nested callback level.
+		/*
+		 * existsBlocking is a blocking method, although discouraged to use this method , but in local filesystems it is very fast
+		 * so we use it 
+		 * Also introducing non-blocking exists method introduces another async callback which is increases complexity
+		 * 
+		 * */
 		if(!vertx.fileSystem().existsBlocking(file)){
 				request.response().setStatusCode(404).end();
 				return ;
@@ -142,6 +150,69 @@ public class JukeBox extends AbstractVerticle {
 			}
 		});
 }
+	
+	private void downloadFile(AsyncFile file, HttpServerRequest request){
+		HttpServerResponse response = request.response();
+		response.putHeader("Content-Type","audio/mpeg")
+		// It is a stream, so the length is unknown.
+		.setChunked(true);
+		
+		file.handler(buffer->{
+			response.write(buffer);
+			if(response.writeQueueFull()){ // Writing too fast!
+				// Back-pressure application by pausing the read stream
+				file.pause();
+				// Resume when drained
+				response.drainHandler(v->file.resume());
+			}
+		});
+		file.endHandler(v->response.end());
+}
+	/*
+	 * Connected to PipeImple class and ReadStream 
+	 * - Reads data from source Stream and writes to destination stream
+	 * - Handles Backpressure , so no need to handle pause etc
+	 * - End of Stream handling 
+	 * 
+	 * 
+	 * */
+	private void downloadFilePipe(AsyncFile file, HttpServerRequest request) {
+	    HttpServerResponse response = request.response();
+	    response.setStatusCode(200)
+	      .putHeader("Content-Type", "audio/mpeg")
+	      .setChunked(true);
+	    file.pipeTo(response);
+	  }
+	
+	private AsyncFile currentFile;
+	private long positionInFile;
+	
+	
+	private void streamAudioChunk(long id){
+		if(currentmode == State.PAUSED){
+			return;
+		}
+		if (currentFile == null && playlist.isEmpty()){
+			currentmode = State.PAUSED;
+			return;
+		}
+		if(currentFile == null){
+			openNextFile();
+		}
+		currentFile.readBuffer(Buffer.buffer(4096),0,positionInFile,4096,ar->{
+			if(ar.succeeded()){
+				processReadBuffer(ar.result());
+			}else{
+				logger.error("Read Failed",ar.cause());
+				closeCurrentFile();
+			}
+		});
+	}
+	
+	
+	
+	
+	
 	
 	
 	
