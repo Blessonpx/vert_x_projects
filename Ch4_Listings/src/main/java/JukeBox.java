@@ -43,13 +43,13 @@ public class JukeBox extends AbstractVerticle {
 	
 	@Override
 	public void start() {
-		EventBus eventBus = vertx.EventBus();
+		EventBus eventBus = vertx.eventBus();
 		eventBus.consumer("jukebox.list",this::list);
 		eventBus.consumer("jukebox.schedule",this::schedule);
 		eventBus.consumer("jukebox.play",this::play);
 		eventBus.consumer("jukebox.pause",this::pause);
 		
-		vertx.createHttpServer().requestHandler(this::handler).listen(8080);
+		vertx.createHttpServer().requestHandler(this::httpHandler).listen(8080);
 		vertx.setPeriodic(100, this::streamAudioChunk);
 	}
 	
@@ -187,28 +187,65 @@ public class JukeBox extends AbstractVerticle {
 	private AsyncFile currentFile;
 	private long positionInFile;
 	
+	private void streamAudioChunk(long id) {
+	    if (currentmode == State.PAUSED) {
+	      return;
+	    }
+	    if (currentFile == null && playlist.isEmpty()) {
+	      currentmode = State.PAUSED;
+	      return;
+	    }
+	    if (currentFile == null) {
+	      openNextFile();
+	    }
+	    /*
+		 * Buffers cannot be reused across I/O operations, so we need a new one.
+		 * 
+		 * */
+	    currentFile.read(Buffer.buffer(4096), 0, positionInFile, 4096, ar -> {
+	      if (ar.succeeded()) {
+	    	  /*
+	    	   * This is where data is being copied to all players.
+	    	   * */
+	        processReadBuffer(ar.result());
+	      } else {
+	        logger.error("Read failed", ar.cause());
+	        closeCurrentFile();
+	      }
+	    });
+	  }
 	
-	private void streamAudioChunk(long id){
-		if(currentmode == State.PAUSED){
-			return;
-		}
-		if (currentFile == null && playlist.isEmpty()){
-			currentmode = State.PAUSED;
-			return;
-		}
-		if(currentFile == null){
-			openNextFile();
-		}
-		currentFile.readBuffer(Buffer.buffer(4096),0,positionInFile,4096,ar->{
-			if(ar.succeeded()){
-				processReadBuffer(ar.result());
-			}else{
-				logger.error("Read Failed",ar.cause());
-				closeCurrentFile();
-			}
-		});
+
+	
+	
+	private void openNextFile(){
+		OpenOptions opts = new OpenOptions().setRead(true);
+		currentFile=vertx.fileSystem()
+			.openBlocking("tracks/"+playlist.poll(),opts);
+		positionInFile=0;
 	}
 	
+	private void closeCurrentFile(){
+		positionInFile = 0;
+		currentFile.close();
+		currentFile = null;
+	}
+	
+	private void processReadBuffer(Buffer buffer){
+		positionInFile+=buffer.length();
+		if(buffer.length()==0){
+			// This happens when the end of the file has been reached.
+			closeCurrentFile();
+			return;
+		}
+		for(HttpServerResponse streamer:streamers ){
+			if(!streamer.writeQueueFull()){
+				// backPressure Again
+				streamer.write(buffer.copy()); // Remember, buffers cannot be reused.
+			}
+		}
+		
+	}
 	
 	
 	
