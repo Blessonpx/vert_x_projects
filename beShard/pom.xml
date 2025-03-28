@@ -7,7 +7,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <vertx.version>4.4.4</vertx.version>  <!-- Use latest version -->
+        <vertx.version>4.5.13</vertx.version>  <!-- Use latest version -->
         <logback.version>1.2.3</logback.version>
     </properties>
     
@@ -16,18 +16,13 @@
 <dependency>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-web</artifactId>
-    <version>4.5.13</version>
+    <version>${vertx.version}</version>
 </dependency>
 	<dependency>
 		<groupId>io.vertx</groupId>
 		<artifactId>vertx-core</artifactId>
-		<version>4.4.4</version>
+		<version>${vertx.version}</version>
 		</dependency>
-		<dependency>
-  <groupId>io.vertx</groupId>
-  <artifactId>vertx-web</artifactId>
-  <version>4.4.4</version>
-</dependency>
 <dependency>
   <groupId>org.apache.logging.log4j</groupId>
   <artifactId>log4j-api</artifactId>
