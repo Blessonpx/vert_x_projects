@@ -23,6 +23,21 @@ public class HandleRoutes extends AbstractVerticle {
 			ctx.response().send("you passed ");
 		});
 		
+		router.get("/hello/:param").handler(ctx->{
+			logger.info("Inside /hello/:param");
+			String name = ctx.pathParam("param");
+			StringBuilder responseBuilder = new StringBuilder("Path:"+name+"\n QueryParams: \n");
+			
+			ctx.request().params().forEach(entry->{
+				responseBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+			});
+			
+			ctx.response().putHeader("Content-Type","text/plain").end(responseBuilder.toString());
+		});
+		
+		
+		
+		
 		vertx.createHttpServer()
 		.requestHandler(router).listen(8080);
 	}
