@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 
 public class HandleRoutes extends AbstractVerticle {
 	private static final Logger logger =  LoggerFactory.getLogger(HandleRoutes.class);
@@ -76,4 +77,25 @@ public class HandleRoutes extends AbstractVerticle {
 		vertx.createHttpServer()
 		.requestHandler(router).listen(8080);
 	}
+	
+	
+	private void checkURLConfig(String filePath, RoutingContext ctx) {
+		vertx.fileSystem().readFile(filePath,ar->{
+			if(ar.succeeded()) {
+				String content = ar.result().toString();
+				long lineCount=content.lines().count();
+				
+				ctx.response()
+					.putHeader("Content-Type","text/plain").end("Line Count"+lineCount);
+			}else {
+				ctx.response()
+					.setStatusCode(500)
+					.end("Failed to read file"+ar.cause().getMessage());
+			}
+		});
+	}
+	
+	
+	
+	
 }
