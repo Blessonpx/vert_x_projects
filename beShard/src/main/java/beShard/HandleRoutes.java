@@ -26,15 +26,50 @@ public class HandleRoutes extends AbstractVerticle {
 		router.get("/hello/:param").handler(ctx->{
 			logger.info("Inside /hello/:param");
 			String name = ctx.pathParam("param");
-			StringBuilder responseBuilder = new StringBuilder("Path:"+name+"\n QueryParams: \n");
+			StringBuilder responseBuilder = new StringBuilder();
+			logger.info(responseBuilder.toString());
 			
-			ctx.request().params().forEach(entry->{
-				responseBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+			ctx.queryParams().forEach(entry->{
+				responseBuilder.append(entry.getKey())
+					.append("=")
+					.append(entry.getValue())
+					.append("&");
 			});
 			
-			ctx.response().putHeader("Content-Type","text/plain").end(responseBuilder.toString());
+			if(responseBuilder.length()>0) {
+				responseBuilder.setLength(responseBuilder.length()-1);
+			}
+			
+			
+
+			String url="/ss/"+name;
+			if(responseBuilder.length()>0) {
+				url+="?"+responseBuilder;
+			}
+			
+			logger.info(url);
+			ctx.response()
+			.setStatusCode(301)
+			.putHeader("Location", url)
+			.end();
 		});
 		
+		
+		router.get("/ss/:param").handler(ctx->{
+			logger.info("Inside /ss/:param");
+			String param=ctx.pathParam("param");
+			StringBuilder responseBuilder = new StringBuilder(param);
+			
+			ctx.queryParams().forEach(entry->{
+				responseBuilder.append(entry.getKey())
+                .append("=")
+                .append(entry.getValue())
+                .append("\n");
+			});
+			ctx.response()
+				.putHeader("Content-Type","text/plain")
+				.send(responseBuilder.toString());
+		});
 		
 		
 		
